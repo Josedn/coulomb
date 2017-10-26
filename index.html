@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+    <title>Ley de Coulomb</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles.css" type="text/css">
+
+    <script src="common.js"></script>
+    <script src="logic-grid.js"></script>
+</head>
+<body>
+
+<header class="main-header">
+    <h1>Ley de Coulomb</h1>
+</header>
+
+<div class="main-wrapper">
+  <div class="left">
+        <p id="text-output">-</p>
+        <input type="text" name="carga" placeholder="Digite la magnitud de la carga">
+        <br><br>
+        <button onclick="onNewCharge();">Agregar nueva carga</button>
+        <br><br>
+        <button>Calcular campo eléctrico</button>
+        <br><br>
+        <button>Calcular fuerzas entre partículas</button>
+
+  </div>
+
+  <div class="right">
+    <canvas id="demo" width="512" height="512"></canvas>
+  </div>
+</div><!-- main wrapper -->
+
+</body>
+</html>
