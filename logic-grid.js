@@ -34,42 +34,15 @@ function Camera(map, width, height) {
     this.maxY = map.rows * map.tsize - height;
 }
 
-Camera.prototype.follow = function (sprite) {
-    this.following = sprite;
-    sprite.screenX = 0;
-    sprite.screenY = 0;
-};
+Camera.SPEED = 256; // pixels per second
 
-Camera.prototype.update = function () {
-  if (this.following == undefined)
-  {
-    return;
-  }
-    // assume followed sprite should be placed at the center of the screen
-    // whenever possible
-    this.following.screenX = this.width / 2;
-    this.following.screenY = this.height / 2;
-
-    // make the camera follow the sprite
-    this.x = this.following.x - this.width / 2;
-    this.y = this.following.y - this.height / 2;
+Camera.prototype.move = function (delta, dirx, diry) {
+    // move camera
+    this.x += dirx * Camera.SPEED * delta;
+    this.y += diry * Camera.SPEED * delta;
     // clamp values
     this.x = Math.max(0, Math.min(this.x, this.maxX));
     this.y = Math.max(0, Math.min(this.y, this.maxY));
-
-    // in map corners, the sprite cannot be placed in the center of the screen
-    // and we have to change its screen coordinates
-
-    // left and right sides
-    if (this.following.x < this.width / 2 ||
-        this.following.x > this.maxX + this.width / 2) {
-        this.following.screenX = this.following.x - this.x;
-    }
-    // top and bottom sides
-    if (this.following.y < this.height / 2 ||
-        this.following.y > this.maxY + this.height / 2) {
-        this.following.screenY = this.following.y - this.y;
-    }
 };
 
 function Hero(map, x, y, q) {
@@ -109,7 +82,27 @@ Game.load = function () {
     ];
 };
 Game.onMouseMove = function (x, y, isDrag) {
-  //console.log("Moving mouse: " + x + ", " + y + ", " + (isDrag ? "true" : "false"));
+  if (Game.camera == undefined)
+  {
+    return;
+  }
+  if (isDrag)
+  {
+    this.onMouseClick(x, y);
+    if (this.selectedHero == null) {
+      var diffX = x - this.selectedScreenX;
+      var diffY = y - this.selectedScreenY;
+      this.camera.x -= diffX;
+      this.camera.y -= diffY;
+    } else {
+      var diffX = this.selectedScreenX - x;
+      var diffY = this.selectedScreenY - y;
+      this.selectedHero.x -= diffX;
+      this.selectedHero.y -= diffY;
+    }
+  }
+  this.selectedScreenX = x;
+  this.selectedScreenY = y;
 };
 
 Game.onMouseClick = function (x, y) {
@@ -117,11 +110,12 @@ Game.onMouseClick = function (x, y) {
   var hero =  this._getHeroFor(x, y);
   if (hero != null) {
     console.log(hero.q);
-    this.camera.follow(hero);
     this.selectedHero = hero;
     setEditCharge(hero.q);
   } else {
     console.log("null");
+    this.selectedHero = null;
+    setEditCharge("");
   }
 };
 
@@ -150,13 +144,16 @@ Game.init = function () {
     this.addHero(-1, 160, 160);
     this.addHero(1, 160 + 256, 160);
     this.selectedHero = this.heroes[1];
+
+    this.selectedScreenX = 0;
+    this.selectedScreenY = 0;
+
     this.positiveImage = Loader.getImage('positive');
     this.negativeImage = Loader.getImage('negative');
 };
 
 Game.addHero = function(q, x, y) {
   this.heroes.push(new Hero(map, x, y, q));
-  this.camera.follow(this.heroes[this.heroes.length - 1]);
 };
 
 Game.update = function (delta) {
@@ -167,11 +164,8 @@ Game.update = function (delta) {
     else if (Keyboard.isDown(Keyboard.RIGHT)) { dirx = 1; }
     else if (Keyboard.isDown(Keyboard.UP)) { diry = -1; }
     else if (Keyboard.isDown(Keyboard.DOWN)) { diry = 1; }
-    if (this.selectedHero != undefined)
-    {
-      this.selectedHero.move(delta, dirx, diry);
-    }
-    this.camera.update();
+
+    this.camera.move(delta, dirx, diry);
 };
 
 Game._drawGrid = function () {
