@@ -8,6 +8,10 @@ function writePosition(str) {
   document.getElementById('text-output').innerHTML = str;
 }
 
+function writeField(str) {
+  document.getElementById('text-output-field').innerHTML = str;
+}
+
 function onNewCharge() {
   var q = document.getElementsByName("carga")[0];
   var qNumeric = parseFloat(q.value);
@@ -81,11 +85,28 @@ Game.load = function () {
         Loader.loadImage('positive', 'assets/proton.png')
     ];
 };
+
+Game._distance = function(x1, y1, x2, y2) {
+  return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+}
+
+Game._getFieldFor = function(x, y) {
+  var ke = 9 * Math.pow(10, 9)
+  var total = 0;
+  for (var i = 0; i < this.heroes.length; i++) {
+    var currentHero = this.heroes[i];
+    total += ke * (currentHero.q / Math.pow(this._distance(x, y, currentHero.x, currentHero.y), 3));
+  }
+  return total;
+}
+
 Game.onMouseMove = function (x, y, isDrag) {
   if (Game.camera == undefined)
   {
     return;
   }
+
+  writeField("Valor del campo en (" + (this.camera.x + x) + ", " + (this.camera.y + y) +  "): " + this._getFieldFor((this.camera.x + x), (this.camera.y + y)).toFixed(4));
   if (isDrag)
   {
     this.onMouseClick(x, y);
@@ -109,11 +130,9 @@ Game.onMouseClick = function (x, y) {
   //console.log("Click!: " + x + ", " + y);
   var hero =  this._getHeroFor(x, y);
   if (hero != null) {
-    console.log(hero.q);
     this.selectedHero = hero;
     setEditCharge(hero.q);
   } else {
-    console.log("null");
     this.selectedHero = null;
     setEditCharge("");
   }
