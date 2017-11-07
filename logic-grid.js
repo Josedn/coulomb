@@ -214,7 +214,8 @@ Game.render = function () {
             this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
             this.heroes[i].y - this.camera.y - this.heroes[i].height / 2);
       }
-      positions += "X: " + this.heroes[i].x.toFixed(3) + ", Y: " + this.heroes[i].y.toFixed(3) + "<br>";
+      positions += "X: " + this.heroes[i].x.toFixed(3) + ", Y: " + this.heroes[i].y.toFixed(3)
+      +", Q: "+this.heroes[i].q.toFixed(3) +"<br>";
     }
 
     writePosition(positions);
