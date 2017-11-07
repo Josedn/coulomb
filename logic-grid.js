@@ -106,7 +106,7 @@ Game.init = function () {
     this.heroes = [];
     this.camera = new Camera(map, 512, 512);
 
-    this.addHero(1, 160, 160);
+    this.addHero(-1, 160, 160);
     this.addHero(1, 160 + 256, 160);
 };
 
