@@ -95,7 +95,9 @@ Game._getFieldFor = function(x, y) {
   var total = 0;
   for (var i = 0; i < this.heroes.length; i++) {
     var currentHero = this.heroes[i];
-    total += ke * (currentHero.q / Math.pow(this._distance(x, y, currentHero.x, currentHero.y), 3));
+    var vectorMagnitude = this._distance(x, y, currentHero.x, currentHero.y);
+    total +=  ke * vectorMagnitude* (currentHero.q /
+                   Math.pow(this._distance(x, y, currentHero.x, currentHero.y), 3));
   }
   return total;
 }
@@ -107,10 +109,11 @@ Game._getForceFor = function(x,y,pos){
 
   for (var i = 0; i < this.heroes.length; i++) {
     var currentHeroFrom = this.heroes[i];
+    var vectorMagnitude = this._distance(currentHeroFrom.x, currentHeroFrom.y,x,y);
 
     if(i!=pos){
-      total += ke * ((currentHero.q*currentHeroFrom.q) /
-                     Math.pow(this._distance(x, y, currentHeroFrom.x, currentHeroFrom.y), 3));
+      total += ke * vectorMagnitude * ((currentHero.q*currentHeroFrom.q) /
+                     Math.pow(this._distance(currentHeroFrom.x, currentHeroFrom.y,x,y), 3));
     }
   }
   return total;
@@ -177,8 +180,8 @@ Game.init = function () {
     this.heroes = [];
     this.camera = new Camera(map, 512, 512);
 
-    this.addHero(-1, 160, 160);
-    this.addHero(1, 160 + 256, 160);
+    this.addHero(-0.001, 160, 160);
+    this.addHero(0.001, 160 + 256, 160);
     this.selectedHero = this.heroes[1];
 
     this.selectedScreenX = 0;
@@ -290,7 +293,7 @@ Game.render = function () {
       }
       force = this._getForceFor(this.heroes[i].x,this.heroes[i].y,i);
       positions += "X: " + this.heroes[i].x.toFixed(3) + ", Y: " + this.heroes[i].y.toFixed(3)
-      +", Q: "+this.heroes[i].q.toFixed(3)+ ", valor de la fuerza: "+force.toFixed(3) +"<br>";
+      +", Q: "+this.heroes[i].q.toFixed(6)+ ", valor de la fuerza: "+force.toFixed(6) +"<br>";
     }
 
     writePosition(positions);
