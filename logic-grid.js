@@ -97,6 +97,12 @@ Game.load = function () {
         Loader.loadImage('positive', 'assets/proton.png')
     ];
 };
+Game.onMouseMove = function (x, y, isDrag) {
+  console.log("Moving mouse: " + x + ", " + y + ", " + (isDrag ? "true" : "false"));
+}
+Game.onMouseClick = function (x, y) {
+  console.log("Click!: " + x + ", " + y);
+}
 
 Game.init = function () {
     Keyboard.listenForEvents(

@@ -109,6 +109,8 @@ Game.tick = function (elapsed) {
 Game.init = function () {};
 Game.update = function (delta) {};
 Game.render = function () {};
+Game.onMouseClick = function (x, y) {};
+Game.onMouseMove = function (x, y, isDrag) {};
 
 //
 // start up function
@@ -116,5 +118,27 @@ Game.render = function () {};
 
 window.onload = function () {
     var context = document.getElementById('demo').getContext('2d');
+    var canvas = context.canvas;
     Game.run(context);
+    var isDrag = false;
+    canvas.addEventListener('mousemove', function(evt) {
+      var rect = canvas.getBoundingClientRect();
+      var x = evt.clientX - rect.left;
+      var y = evt.clientY - rect.top;
+      Game.onMouseMove(x, y, isDrag);
+    }, false);
+    canvas.addEventListener('click', function(evt) {
+      var rect = canvas.getBoundingClientRect();
+      var x = evt.clientX - rect.left;
+      var y = evt.clientY - rect.top;
+      Game.onMouseClick(x, y);
+    }, false);
+
+    canvas.addEventListener('mousedown', function(evt) {
+      isDrag = true;
+    }, false);
+
+    canvas.addEventListener('mouseup', function(evt) {
+      isDrag = false;
+    }, false);
 };
