@@ -14,6 +14,17 @@ function onNewCharge() {
   Game.addHero(qNumeric, 160, 160);
 }
 
+function onEditCharge() {
+  var q = document.getElementsByName("cargaEdit")[0];
+  var qNumeric = parseFloat(q.value);
+  Game.selectedHero.q = qNumeric;
+}
+
+function setEditCharge(value) {
+  var q = document.getElementsByName("cargaEdit")[0];
+  q.value = value;
+}
+
 function Camera(map, width, height) {
     this.x = 0;
     this.y = 0;
@@ -98,11 +109,35 @@ Game.load = function () {
     ];
 };
 Game.onMouseMove = function (x, y, isDrag) {
-  console.log("Moving mouse: " + x + ", " + y + ", " + (isDrag ? "true" : "false"));
-}
+  //console.log("Moving mouse: " + x + ", " + y + ", " + (isDrag ? "true" : "false"));
+};
+
 Game.onMouseClick = function (x, y) {
-  console.log("Click!: " + x + ", " + y);
-}
+  //console.log("Click!: " + x + ", " + y);
+  var hero =  this._getHeroFor(x, y);
+  if (hero != null) {
+    console.log(hero.q);
+    this.camera.follow(hero);
+    this.selectedHero = hero;
+    setEditCharge(hero.q);
+  } else {
+    console.log("null");
+  }
+};
+
+Game._getHeroFor = function(x, y) {
+  x = this.camera.x + x;
+  y = this.camera.y + y;
+
+  var radius = 32;
+  for (var i = 0; i < this.heroes.length; i++) {
+    var currentHero = this.heroes[i];
+    if (x > this.heroes[i].x - radius && x < this.heroes[i].x + radius && y > this.heroes[i].y - radius && y < this.heroes[i].y + radius) {
+      return currentHero;
+    }
+  }
+  return null;
+};
 
 Game.init = function () {
     Keyboard.listenForEvents(
@@ -114,6 +149,9 @@ Game.init = function () {
 
     this.addHero(-1, 160, 160);
     this.addHero(1, 160 + 256, 160);
+    this.selectedHero = this.heroes[1];
+    this.positiveImage = Loader.getImage('positive');
+    this.negativeImage = Loader.getImage('negative');
 };
 
 Game.addHero = function(q, x, y) {
@@ -129,9 +167,9 @@ Game.update = function (delta) {
     else if (Keyboard.isDown(Keyboard.RIGHT)) { dirx = 1; }
     else if (Keyboard.isDown(Keyboard.UP)) { diry = -1; }
     else if (Keyboard.isDown(Keyboard.DOWN)) { diry = 1; }
-    if (this.heroes[this.heroes.length - 1] != undefined)
+    if (this.selectedHero != undefined)
     {
-      this.heroes[this.heroes.length - 1].move(delta, dirx, diry);
+      this.selectedHero.move(delta, dirx, diry);
     }
     this.camera.update();
 };
@@ -209,14 +247,14 @@ Game.render = function () {
     this._drawLines();
 
     for (var i = 0; i < this.heroes.length; i++) {
-      if (this.camera.following == this.heroes[i]) {
+      if (this.heroes[i].q > 0) {
         this.ctx.drawImage(
-            this.heroes[i].image,
-            this.heroes[i].screenX - this.heroes[i].width / 2,
-            this.heroes[i].screenY - this.heroes[i].height / 2);
+            this.positiveImage,
+            this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
+            this.heroes[i].y - this.camera.y - this.heroes[i].height / 2);
       } else {
         this.ctx.drawImage(
-            this.heroes[i].image,
+            this.negativeImage,
             this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
             this.heroes[i].y - this.camera.y - this.heroes[i].height / 2);
       }
