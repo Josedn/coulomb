@@ -1,61 +1,7 @@
 var map = {
-    cols: 12,
-    rows: 12,
-    tsize: 64,
-    layers: [[
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-    ], [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    ]],
-    getTile: function (layer, col, row) {
-        return this.layers[layer][row * map.cols + col];
-    },
-    isSolidTileAtXY: function (x, y) {
-        var col = Math.floor(x / this.tsize);
-        var row = Math.floor(y / this.tsize);
-
-        // tiles 3 and 5 are solid -- the rest are walkable
-        // loop through all layers and return TRUE if any tile is solid
-        return this.layers.reduce(function (res, layer, index) {
-            var tile = this.getTile(index, col, row);
-            var isSolid = tile === 3 || tile === 5;
-            return res || isSolid;
-        }.bind(this), false);
-    },
-    getCol: function (x) {
-        return Math.floor(x / this.tsize);
-    },
-    getRow: function (y) {
-        return Math.floor(y / this.tsize);
-    },
-    getX: function (col) {
-        return col * this.tsize;
-    },
-    getY: function (row) {
-        return row * this.tsize;
-    }
+    cols: 10,
+    rows: 10,
+    tsize: 64
 };
 
 function writePosition(str) {
@@ -65,7 +11,7 @@ function writePosition(str) {
 function onNewCharge() {
   var q = document.getElementsByName("carga")[0];
   var qNumeric = parseFloat(q.value);
-  Game.addHero(qNumeric);
+  Game.addHero(qNumeric, 160, 160);
 }
 
 function Camera(map, width, height) {
@@ -137,49 +83,11 @@ Hero.prototype.move = function (delta, dirx, diry) {
     this.x += dirx * Hero.SPEED * delta;
     this.y += diry * Hero.SPEED * delta;
 
-    // check if we walked into a non-walkable tile
-    this._collide(dirx, diry);
-
     // clamp values
     var maxX = this.map.cols * this.map.tsize;
     var maxY = this.map.rows * this.map.tsize;
     this.x = Math.max(0, Math.min(this.x, maxX));
     this.y = Math.max(0, Math.min(this.y, maxY));
-};
-
-Hero.prototype._collide = function (dirx, diry) {
-    var row, col;
-    // -1 in right and bottom is because image ranges from 0..63
-    // and not up to 64
-    var left = this.x - this.width / 2;
-    var right = this.x + this.width / 2 - 1;
-    var top = this.y - this.height / 2;
-    var bottom = this.y + this.height / 2 - 1;
-
-    // check for collisions on sprite sides
-    var collision =
-        this.map.isSolidTileAtXY(left, top) ||
-        this.map.isSolidTileAtXY(right, top) ||
-        this.map.isSolidTileAtXY(right, bottom) ||
-        this.map.isSolidTileAtXY(left, bottom);
-    if (!collision) { return; }
-
-    if (diry > 0) {
-        row = this.map.getRow(bottom);
-        this.y = -this.height / 2 + this.map.getY(row);
-    }
-    else if (diry < 0) {
-        row = this.map.getRow(top);
-        this.y = this.height / 2 + this.map.getY(row + 1);
-    }
-    else if (dirx > 0) {
-        col = this.map.getCol(right);
-        this.x = -this.width / 2 + this.map.getX(col);
-    }
-    else if (dirx < 0) {
-        col = this.map.getCol(left);
-        this.x = this.width / 2 + this.map.getX(col + 1);
-    }
 };
 
 Game.load = function () {
@@ -197,11 +105,13 @@ Game.init = function () {
 
     this.heroes = [];
     this.camera = new Camera(map, 512, 512);
+
+    this.addHero(1, 160, 160);
+    this.addHero(1, 160 + 256, 160);
 };
 
-Game.addHero = function(q) {
-
-  this.heroes.push(new Hero(map, 160, 160, q));
+Game.addHero = function(q, x, y) {
+  this.heroes.push(new Hero(map, x, y, q));
   this.camera.follow(this.heroes[this.heroes.length - 1]);
 };
 
@@ -220,38 +130,8 @@ Game.update = function (delta) {
     this.camera.update();
 };
 
-Game._drawLayer = function (layer) {
-    var startCol = Math.floor(this.camera.x / map.tsize);
-    var endCol = startCol + (this.camera.width / map.tsize);
-    var startRow = Math.floor(this.camera.y / map.tsize);
-    var endRow = startRow + (this.camera.height / map.tsize);
-    var offsetX = -this.camera.x + startCol * map.tsize;
-    var offsetY = -this.camera.y + startRow * map.tsize;
-
-    for (var c = startCol; c <= endCol; c++) {
-        for (var r = startRow; r <= endRow; r++) {
-            var tile = map.getTile(layer, c, r);
-            var x = (c - startCol) * map.tsize + offsetX;
-            var y = (r - startRow) * map.tsize + offsetY;
-            if (tile !== 0) { // 0 => empty tile
-                this.ctx.drawImage(
-                    this.tileAtlas, // image
-                    (tile - 1) * map.tsize, // source x
-                    0, // source y
-                    map.tsize, // source width
-                    map.tsize, // source height
-                    Math.round(x),  // target x
-                    Math.round(y), // target y
-                    map.tsize, // target width
-                    map.tsize // target height
-                );
-            }
-        }
-    }
-};
-
 Game._drawGrid = function () {
-        var width = map.cols * map.tsize;
+    var width = map.cols * map.tsize;
     var height = map.rows * map.tsize;
     var x, y;
     for (var r = 0; r < map.rows; r++) {
@@ -272,21 +152,63 @@ Game._drawGrid = function () {
     }
 };
 
+Game._drawNegativeFieldLine = function(startX, startY, endX, endY, curvature) {
+  var ctrl1X = startX;
+  var ctrl1Y = startY - curvature;
+
+  var ctrl2X =  endX;
+  var ctrl2Y = endY - curvature;
+
+  this.ctx.beginPath();
+  this.ctx.moveTo(startX, startY);
+  this.ctx.bezierCurveTo(ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, endX, endY);
+  this.ctx.stroke();
+
+  var ctrl1X = startX;
+  var ctrl1Y = startY + curvature;
+
+  var ctrl2X =  endX;
+  var ctrl2Y = endY + curvature;
+
+  this.ctx.beginPath();
+  this.ctx.moveTo(startX, startY);
+  this.ctx.bezierCurveTo(ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, endX, endY);
+  this.ctx.stroke();
+}
+
+Game._drawLines = function () {
+  var drawn = {};
+  //for (var i = 0; i < this.heroes.length; i++) {
+  for (var i = 0; i < 1; i++) {
+    var currentHero = this.heroes[i];
+
+    var otherHero = this.heroes[i + 1];
+    var startX = currentHero.x - this.camera.x;
+    var startY = currentHero.y - this.camera.y;
+
+    var endX = otherHero.x - this.camera.x;
+    var endY = otherHero.y - this.camera.y;
+
+    this._drawNegativeFieldLine(startX, startY, endX, endY, 0);
+    this._drawNegativeFieldLine(startX, startY, endX, endY, 32);
+    this._drawNegativeFieldLine(startX, startY, endX, endY, 64);
+    this._drawNegativeFieldLine(startX, startY, endX, endY, 128);
+
+  }
+}
+
 Game.render = function () {
-    // draw map background layer
-    this._drawLayer(0);
-
-
     var positions = "";
+
+    this._drawLines();
+
     for (var i = 0; i < this.heroes.length; i++) {
       if (this.camera.following == this.heroes[i]) {
-        // draw main character
         this.ctx.drawImage(
             this.heroes[i].image,
             this.heroes[i].screenX - this.heroes[i].width / 2,
             this.heroes[i].screenY - this.heroes[i].height / 2);
       } else {
-        // draw main character
         this.ctx.drawImage(
             this.heroes[i].image,
             this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
@@ -296,10 +218,6 @@ Game.render = function () {
     }
 
     writePosition(positions);
-
-
-    // draw map top layer
-    this._drawLayer(1);
 
     this._drawGrid();
 };
