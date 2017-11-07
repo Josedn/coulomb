@@ -100,6 +100,23 @@ Game._getFieldFor = function(x, y) {
   return total;
 }
 
+Game._getForceFor = function(x,y,pos){
+  var ke = 9 * Math.pow(10, 9)
+  var total = 0;
+  var currentHero = this.heroes[pos]
+
+  for (var i = 0; i < this.heroes.length; i++) {
+    var currentHeroFrom = this.heroes[i];
+
+    if(i!=pos){
+      total += ke * ((currentHero.q*currentHeroFrom.q) /
+                     Math.pow(this._distance(x, y, currentHeroFrom.x, currentHeroFrom.y), 3));
+    }
+  }
+  return total;
+
+}
+
 Game.onMouseMove = function (x, y, isDrag) {
   if (Game.camera == undefined)
   {
@@ -271,8 +288,9 @@ Game.render = function () {
             this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
             this.heroes[i].y - this.camera.y - this.heroes[i].height / 2);
       }
+      force = this._getForceFor(this.heroes[i].x,this.heroes[i].y,i);
       positions += "X: " + this.heroes[i].x.toFixed(3) + ", Y: " + this.heroes[i].y.toFixed(3)
-      +", Q: "+this.heroes[i].q.toFixed(3) +"<br>";
+      +", Q: "+this.heroes[i].q.toFixed(3)+ ", valor de la fuerza: "+force.toFixed(3) +"<br>";
     }
 
     writePosition(positions);
