@@ -90,16 +90,27 @@ Game._distance = function(x1, y1, x2, y2) {
   return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
+Game._normalize = function(x, y) {
+  var dist = this._distance(x, y, 0, 0);
+  return {x: (x / dist), y: (y / dist)};
+}
+
 Game._getFieldFor = function(x, y) {
   var ke = 9 * Math.pow(10, 9)
-  var total = 0;
+  var totalX = 0;
+  var totalY = 0;
   for (var i = 0; i < this.heroes.length; i++) {
     var currentHero = this.heroes[i];
-    var vectorMagnitude = this._distance(x, y, currentHero.x, currentHero.y);
-    total +=  ke * vectorMagnitude* (currentHero.q /
-                   Math.pow(this._distance(x, y, currentHero.x, currentHero.y), 3));
+    var directionX = currentHero.x - x;
+    var directionY = currentHero.y - y;
+
+    var normalizedDirection = this._normalize(directionX, directionY);
+    var field = ke * Math.abs((currentHero.q /
+                   Math.pow(this._distance(x, y, currentHero.x, currentHero.y), 3)));
+    totalX +=(field * normalizedDirection.x);
+    totalY +=(field * normalizedDirection.y);
   }
-  return total;
+  return {x: totalX, y: totalY, normalized: this._normalize(totalX, totalY)};
 }
 
 Game._getForceFor = function(x,y,pos){
@@ -112,7 +123,7 @@ Game._getForceFor = function(x,y,pos){
     var vectorMagnitude = this._distance(currentHeroFrom.x, currentHeroFrom.y,x,y);
 
     if(i!=pos){
-      total += ke * vectorMagnitude * ((currentHero.q*currentHeroFrom.q) /
+      total += ke * ((currentHero.q*currentHeroFrom.q) /
                      Math.pow(this._distance(currentHeroFrom.x, currentHeroFrom.y,x,y), 3));
     }
   }
@@ -120,13 +131,15 @@ Game._getForceFor = function(x,y,pos){
 
 }
 
+
 Game.onMouseMove = function (x, y, isDrag) {
   if (Game.camera == undefined)
   {
     return;
   }
+  x = Math.floor(x);
 
-  writeField("Valor del campo en (" + (this.camera.x + x) + ", " + (this.camera.y + y) +  "): " + this._getFieldFor((this.camera.x + x), (this.camera.y + y)).toFixed(4));
+  writeField("Valor del campo en (" + (this.camera.x + x) + ", " + (this.camera.y + y) +  "): " + JSON.stringify(this._getFieldFor((this.camera.x + x), (this.camera.y + y))));
   if (isDrag)
   {
     this.onMouseClick(x, y);
@@ -274,6 +287,17 @@ Game._drawLines = function () {
   }
 }
 
+Game._drawVectors=function(){
+  var x, y;
+  for (var i = 0; i < map.rows; i++){
+    for(var j = 0; j < map.cols; j++){
+      x = i * map.tsize;
+      y = j * map.tsize;
+      //console.log(x + ", " + y + ": " + ", "+ this._getFieldFor(x,y) );
+    }
+  }
+}
+
 Game.render = function () {
     var positions = "";
 
@@ -295,6 +319,7 @@ Game.render = function () {
       positions += "X: " + this.heroes[i].x.toFixed(3) + ", Y: " + this.heroes[i].y.toFixed(3)
       +", Q: "+this.heroes[i].q.toFixed(6)+ ", valor de la fuerza: "+force.toFixed(6) +"<br>";
     }
+    this._drawVectors();
 
     writePosition(positions);
 
