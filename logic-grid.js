@@ -1,7 +1,7 @@
 var map = {
-    cols: 10,
-    rows: 10,
-    tsize: 64
+    cols: 20,
+    rows: 20,
+    tsize: 32
 };
 
 function writePosition(str) {
@@ -93,6 +93,41 @@ Game._distance = function(x1, y1, x2, y2) {
 Game._normalize = function(x, y) {
   var dist = this._distance(x, y, 0, 0);
   return {x: (x / dist), y: (y / dist)};
+}
+
+Game._drawArrow = function(fromx, fromy, tox, toy) {
+  //variables to be used when creating the arrow
+  var ctx = this.ctx;
+  var headlen = 10;
+
+  var angle = Math.atan2(toy-fromy,tox-fromx);
+
+  //starting path of the arrow from the start square to the end square and drawing the stroke
+  ctx.beginPath();
+  ctx.moveTo(fromx, fromy);
+  ctx.lineTo(tox, toy);
+  //ctx.strokeStyle = "#cc0000";
+  //ctx.lineWidth = 22;
+  ctx.stroke();
+
+  //starting a new path from the head of the arrow to one of the sides of the point
+  ctx.beginPath();
+  ctx.moveTo(tox, toy);
+  ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/7),toy-headlen*Math.sin(angle-Math.PI/7));
+
+  //path from the side point of the arrow, to the other side point
+  ctx.lineTo(tox-headlen*Math.cos(angle+Math.PI/7),toy-headlen*Math.sin(angle+Math.PI/7));
+
+  //path from the side point back to the tip of the arrow, and then again to the opposite side point
+  ctx.lineTo(tox, toy);
+  ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/7),toy-headlen*Math.sin(angle-Math.PI/7));
+
+  //draws the paths created above
+  //ctx.strokeStyle = "#cc0000";
+  //ctx.lineWidth = 22;
+  ctx.stroke();
+  //ctx.fillStyle = "#cc0000";
+  ctx.fill();
 }
 
 Game._getFieldFor = function(x, y) {
@@ -288,20 +323,23 @@ Game._drawLines = function () {
 }
 
 Game._drawVectors=function(){
+  var ARROW_MAX_LENGTH = 32;
   var x, y;
   for (var i = 0; i < map.rows; i++){
     for(var j = 0; j < map.cols; j++){
-      x = i * map.tsize;
-      y = j * map.tsize;
-      //console.log(x + ", " + y + ": " + ", "+ this._getFieldFor(x,y) );
+      x = (i * map.tsize);
+      y = (j * map.tsize);
+      var fieldVector = this._getFieldFor(x, y);
+      x = x - this.camera.x;
+      y = y - this.camera.y;
+      this._drawArrow(x, y, x + ARROW_MAX_LENGTH*fieldVector.normalized.x, y + ARROW_MAX_LENGTH*fieldVector.normalized.y);
     }
   }
 }
 
 Game.render = function () {
+  this._drawVectors();
     var positions = "";
-
-    this._drawLines();
 
     for (var i = 0; i < this.heroes.length; i++) {
       if (this.heroes[i].q > 0) {
@@ -319,7 +357,6 @@ Game.render = function () {
       positions += "X: " + this.heroes[i].x.toFixed(3) + ", Y: " + this.heroes[i].y.toFixed(3)
       +", Q: "+this.heroes[i].q.toFixed(6)+ ", valor de la fuerza: "+force.toFixed(6) +"<br>";
     }
-    this._drawVectors();
 
     writePosition(positions);
 
