@@ -98,7 +98,7 @@ Game._normalize = function(x, y) {
 Game._drawArrow = function(fromx, fromy, tox, toy) {
   //variables to be used when creating the arrow
   var ctx = this.ctx;
-  var headlen = 10;
+  var headlen = 5;
 
   var angle = Math.atan2(toy-fromy,tox-fromx);
 
@@ -130,18 +130,22 @@ Game._drawArrow = function(fromx, fromy, tox, toy) {
   ctx.fill();
 }
 
+Game._resetStyle = function() {
+
+}
+
 Game._getFieldFor = function(x, y) {
   var ke = 9 * Math.pow(10, 9)
   var totalX = 0;
   var totalY = 0;
   for (var i = 0; i < this.heroes.length; i++) {
     var currentHero = this.heroes[i];
-    var directionX = currentHero.x - x;
-    var directionY = currentHero.y - y;
+    var directionX = x- currentHero.x;
+    var directionY = y- currentHero.y;
 
     var normalizedDirection = this._normalize(directionX, directionY);
-    var field = ke * Math.abs((currentHero.q /
-                   Math.pow(this._distance(x, y, currentHero.x, currentHero.y), 3)));
+    var field = ke * (currentHero.q /
+                   Math.pow(this._distance(x, y, currentHero.x, currentHero.y), 3));
     totalX +=(field * normalizedDirection.x);
     totalY +=(field * normalizedDirection.y);
   }
@@ -323,7 +327,7 @@ Game._drawLines = function () {
 }
 
 Game._drawVectors=function(){
-  var ARROW_MAX_LENGTH = 32;
+  var ARROW_MAX_LENGTH = 26;
   var x, y;
   for (var i = 0; i < map.rows; i++){
     for(var j = 0; j < map.cols; j++){
