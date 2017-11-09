@@ -181,6 +181,7 @@ Game.onMouseMove = function (x, y, isDrag) {
     return;
   }
   x = Math.floor(x);
+  y = Math.floor(y);
   var field = this._getFieldFor((this.camera.x + x), (this.camera.y + y));
   writeField("Valor del campo en (" + (this.camera.x + x) + ", " + (this.camera.y + y) +  "): (" + field.x.toFixed(4) + "i + " + field.y.toFixed(4) + "j) N / C");
   if (isDrag)
@@ -285,51 +286,6 @@ Game._drawGrid = function () {
     }
 };
 
-Game._drawNegativeFieldLine = function(startX, startY, endX, endY, curvature) {
-  var ctrl1X = startX;
-  var ctrl1Y = startY - curvature;
-
-  var ctrl2X =  endX;
-  var ctrl2Y = endY - curvature;
-
-  this.ctx.beginPath();
-  this.ctx.moveTo(startX, startY);
-  this.ctx.bezierCurveTo(ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, endX, endY);
-  this.ctx.stroke();
-
-  var ctrl1X = startX;
-  var ctrl1Y = startY + curvature;
-
-  var ctrl2X =  endX;
-  var ctrl2Y = endY + curvature;
-
-  this.ctx.beginPath();
-  this.ctx.moveTo(startX, startY);
-  this.ctx.bezierCurveTo(ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, endX, endY);
-  this.ctx.stroke();
-}
-
-Game._drawLines = function () {
-  var drawn = {};
-  //for (var i = 0; i < this.heroes.length; i++) {
-  for (var i = 0; i < 1; i++) {
-    var currentHero = this.heroes[i];
-
-    var otherHero = this.heroes[i + 1];
-    var startX = currentHero.x - this.camera.x;
-    var startY = currentHero.y - this.camera.y;
-
-    var endX = otherHero.x - this.camera.x;
-    var endY = otherHero.y - this.camera.y;
-
-    this._drawNegativeFieldLine(startX, startY, endX, endY, 0);
-    this._drawNegativeFieldLine(startX, startY, endX, endY, 32);
-    this._drawNegativeFieldLine(startX, startY, endX, endY, 64);
-    this._drawNegativeFieldLine(startX, startY, endX, endY, 128);
-
-  }
-}
-
 Game._drawVectors=function(){
   var ARROW_MAX_LENGTH = 26;
   var x, y;
@@ -343,6 +299,14 @@ Game._drawVectors=function(){
       this._drawArrow(x, y, x + ARROW_MAX_LENGTH*fieldVector.normalized.x, y + ARROW_MAX_LENGTH*fieldVector.normalized.y);
     }
   }
+
+  x = (this.selectedScreenX + this.camera.x);
+  y = (this.selectedScreenY + this.camera.y);
+  var fieldVector = this._getFieldFor(x, y);
+  x = x - this.camera.x;
+  y = y - this.camera.y;
+  this._drawArrow(x, y, x + ARROW_MAX_LENGTH*fieldVector.normalized.x, y + ARROW_MAX_LENGTH*fieldVector.normalized.y);
+
 }
 
 Game.render = function () {
