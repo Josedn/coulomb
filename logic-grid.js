@@ -152,21 +152,25 @@ Game._getFieldFor = function(x, y) {
   return {x: totalX, y: totalY, normalized: this._normalize(totalX, totalY)};
 }
 
-Game._getForceFor = function(x,y,pos){
+Game._getForceFor = function(pos){
   var ke = 9 * Math.pow(10, 9)
-  var total = 0;
   var currentHero = this.heroes[pos]
-
+  var totalX = 0;
+  var totalY = 0;
   for (var i = 0; i < this.heroes.length; i++) {
-    var currentHeroFrom = this.heroes[i];
-    var vectorMagnitude = this._distance(currentHeroFrom.x, currentHeroFrom.y,x,y);
+    if(i != pos) {
+      var currentHeroFrom = this.heroes[i];
+      var directionX = currentHero.x - currentHeroFrom.x;
+      var directionY = currentHero.y - currentHeroFrom.y;
 
-    if(i!=pos){
-      total += ke * ((currentHero.q*currentHeroFrom.q) /
-                     Math.pow(this._distance(currentHeroFrom.x, currentHeroFrom.y,x,y), 3));
+      var normalizedDirection = this._normalize(directionX, directionY);
+      var field = ke * Math.abs((currentHeroFrom.q * currentHero.q) /
+                     Math.pow(this._distance(currentHero.x, currentHero.y, currentHeroFrom.x, currentHeroFrom.y), 3));
+      totalX +=(field * normalizedDirection.x);
+      totalY +=(field * normalizedDirection.y);
     }
   }
-  return total;
+  return {x: totalX, y: totalY, normalized: this._normalize(totalX, totalY)};
 
 }
 
@@ -177,8 +181,8 @@ Game.onMouseMove = function (x, y, isDrag) {
     return;
   }
   x = Math.floor(x);
-
-  writeField("Valor del campo en (" + (this.camera.x + x) + ", " + (this.camera.y + y) +  "): " + JSON.stringify(this._getFieldFor((this.camera.x + x), (this.camera.y + y))));
+  var field = this._getFieldFor((this.camera.x + x), (this.camera.y + y));
+  writeField("Valor del campo en (" + (this.camera.x + x) + ", " + (this.camera.y + y) +  "): (" + field.x.toFixed(4) + "i + " + field.y.toFixed(4) + "j) N / C");
   if (isDrag)
   {
     this.onMouseClick(x, y);
@@ -232,9 +236,9 @@ Game.init = function () {
     this.heroes = [];
     this.camera = new Camera(map, 512, 512);
 
-    this.addHero(-0.001, 160, 160);
-    this.addHero(0.001, 160 + 256, 160);
-    this.selectedHero = this.heroes[1];
+    //this.addHero(-0.001, 160, 160);
+    //this.addHero(0.001, 160 + 256, 160);
+    //this.selectedHero = this.heroes[1];
 
     this.selectedScreenX = 0;
     this.selectedScreenY = 0;
@@ -357,9 +361,9 @@ Game.render = function () {
             this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
             this.heroes[i].y - this.camera.y - this.heroes[i].height / 2);
       }
-      force = this._getForceFor(this.heroes[i].x,this.heroes[i].y,i);
+      force = this._getForceFor(i);
       positions += "X: " + this.heroes[i].x.toFixed(3) + ", Y: " + this.heroes[i].y.toFixed(3)
-      +", Q: "+this.heroes[i].q.toFixed(6)+ ", valor de la fuerza: "+force.toFixed(6) +"<br>";
+      +", Q: "+this.heroes[i].q.toFixed(6)+ ", valor de la fuerza: (" + force.x.toFixed(4) + "i + " + force.y.toFixed(4) + "j) N <br>";
     }
 
     writePosition(positions);
