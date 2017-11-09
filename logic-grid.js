@@ -237,7 +237,7 @@ Game.init = function () {
     this.heroes = [];
     this.camera = new Camera(map, 512, 512);
 
-    //this.addHero(-0.001, 160, 160);
+    this.addHero(0.1, 256, 256);
     //this.addHero(0.001, 160 + 256, 160);
     //this.selectedHero = this.heroes[1];
 
@@ -287,9 +287,11 @@ Game._drawGrid = function () {
 };
 
 Game._drawVectors=function(){
-  var ARROW_MAX_LENGTH = 26;
+  var ARROW_MAX_LENGTH = 1 / 10;
   this.ctx.fillStyle = "black";
+
   var x, y;
+
   for (var i = 0; i < map.rows; i++){
     for(var j = 0; j < map.cols; j++){
       x = (i * map.tsize);
@@ -297,7 +299,7 @@ Game._drawVectors=function(){
       var fieldVector = this._getFieldFor(x, y);
       x = x - this.camera.x;
       y = y - this.camera.y;
-      this._drawArrow(x, y, x + ARROW_MAX_LENGTH*fieldVector.normalized.x, y + ARROW_MAX_LENGTH*fieldVector.normalized.y);
+      this._drawArrow(x, y, x + ARROW_MAX_LENGTH*fieldVector.x, y + ARROW_MAX_LENGTH*fieldVector.y);
     }
   }
 
@@ -318,7 +320,8 @@ Game._drawHeroes = function() {
       this.ctx.drawImage(
           this.positiveImage,
           this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
-          this.heroes[i].y - this.camera.y - this.heroes[i].height / 2);
+          this.heroes[i].y - this.camera.y - this.heroes[i].height / 2
+        );
     } else {
       this.ctx.drawImage(
           this.negativeImage,
