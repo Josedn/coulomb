@@ -288,6 +288,7 @@ Game._drawGrid = function () {
 
 Game._drawVectors=function(){
   var ARROW_MAX_LENGTH = 26;
+  this.ctx.fillStyle = "black";
   var x, y;
   for (var i = 0; i < map.rows; i++){
     for(var j = 0; j < map.cols; j++){
@@ -309,28 +310,35 @@ Game._drawVectors=function(){
 
 }
 
+Game._drawHeroes = function() {
+  var positions = "";
+
+  for (var i = 0; i < this.heroes.length; i++) {
+    if (this.heroes[i].q > 0) {
+      this.ctx.drawImage(
+          this.positiveImage,
+          this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
+          this.heroes[i].y - this.camera.y - this.heroes[i].height / 2);
+    } else {
+      this.ctx.drawImage(
+          this.negativeImage,
+          this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
+          this.heroes[i].y - this.camera.y - this.heroes[i].height / 2);
+    }
+    this.ctx.font = "bold 15px Ubuntu"
+    this.ctx.textBaseline = "middle";
+    this.ctx.fillStyle = "white";
+    this.ctx.fillText(this.heroes[i].q, this.heroes[i].x - this.camera.x, this.heroes[i].y - this.camera.y + this.heroes[i].height / 2);
+    force = this._getForceFor(i);
+    positions += "X: " + this.heroes[i].x.toFixed(3) + ", Y: " + this.heroes[i].y.toFixed(3)
+    +", Q: "+this.heroes[i].q.toFixed(6)+ ", valor de la fuerza: (" + force.x.toFixed(4) + "i + " + force.y.toFixed(4) + "j) N <br>";
+  }
+
+  writePosition(positions);
+}
+
 Game.render = function () {
   this._drawVectors();
-    var positions = "";
-
-    for (var i = 0; i < this.heroes.length; i++) {
-      if (this.heroes[i].q > 0) {
-        this.ctx.drawImage(
-            this.positiveImage,
-            this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
-            this.heroes[i].y - this.camera.y - this.heroes[i].height / 2);
-      } else {
-        this.ctx.drawImage(
-            this.negativeImage,
-            this.heroes[i].x - this.camera.x - this.heroes[i].width / 2,
-            this.heroes[i].y - this.camera.y - this.heroes[i].height / 2);
-      }
-      force = this._getForceFor(i);
-      positions += "X: " + this.heroes[i].x.toFixed(3) + ", Y: " + this.heroes[i].y.toFixed(3)
-      +", Q: "+this.heroes[i].q.toFixed(6)+ ", valor de la fuerza: (" + force.x.toFixed(4) + "i + " + force.y.toFixed(4) + "j) N <br>";
-    }
-
-    writePosition(positions);
-
-    this._drawGrid();
+  this._drawHeroes();
+  this._drawGrid();
 };
